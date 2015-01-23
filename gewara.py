@@ -3,7 +3,7 @@ import re, urllib2, math
 
 list_url = 'http://www.gewara.com/movie/searchMovieStore.xhtml?pageNo=%s&order=releasedate&movietime=all'
 movie_url = 'http://www.gewara.com/movie/%s'
-comment_url = 'http://www.gewara.com/activity/ajax/sns/qryComment.xhtml?pageNumber=0&relatedid=%s&topic=&issue=true&hasMarks=true&tag=movie&isPic=true&isVideo=false&maxCount=%s&userLogo=&order=hot&isCount=false&isWalaMovie=true&isShare=false&flag=&isWide=true&isTicket=true'
+comment_url = 'http://www.gewara.com/activity/ajax/sns/qryComment.xhtml?pageNumber=0&relatedid=%s&topic=&issue=true&hasMarks=true&tag=movie&isPic=true&isVideo=false&maxCount=%s&userLogo=&order=replycount&isCount=false&isWalaMovie=true&isShare=false&flag=&isWide=true&isTicket=true'
 
 def getMovieCount(url):
     '''
@@ -20,7 +20,7 @@ def getMovies(url):
     Get movies list from a page
     '''
     html = urllib2.urlopen(url).read()
-    html1 = re.sub(re.compile(r'[\n\r\t]'),'', html)
+    html1 = re.sub(re.compile(r'[\n\r\t]'), '', html)
     p = re.compile('<div class="title">.*?href="/movie/(.*?)".*?>(.*?)</a>.*?<sub.*?>(.*?)</sub>.*?<sup.*?>(.*?)</sup>.*?<p class="mt10">(.*?)</p>.*?<p>(.*?)</p>.*?<p>(.*?)</p>.*?<p>(.*?)</p>.*?<p>(.*?)</p>.*?<p>(.*?)</p>.*?<p>(.*?)</p>', re.M)
     return p.findall(html1)
 
@@ -29,10 +29,12 @@ def getCommentCount(url):
     Get count of comments of a movie
     '''
     html = urllib2.urlopen(url).read()
-    p = re.compile(r'<em>\((\d*?)\)</em>')
+    p = re.compile(r'哇啦<em>\((\d*?)\)</em>')
     counts = p.findall(html)
     if counts:
         return int(counts[0])
+    else:
+        return 0
     
 def getComments(url):
     '''
@@ -55,8 +57,9 @@ def getComments(url):
             ]
     urllib2.install_opener(opener)
     html = urllib2.urlopen(url).read()
-    p = re.compile(r'')
-    return p.findall(html)
+    html1 = re.sub(re.compile(r'[\n\r\t]'), '', html)
+    p = re.compile(r'<p class="clear"><a href="/home/sns/othersPersonIndex.xhtml\?memberid=(.*?)".*?>(.*?)</a>&nbsp;(<span.*?>(.*?)</span>)?</p>')
+    return p.findall(html1)
 
 def saveMovies(url=list_url):
     count = getMovieCount(url % 0)
@@ -82,6 +85,41 @@ def saveMovies(url=list_url):
         print 'Page %s crawler completes.' % i
     f.close()
 
+def saveUsersAndComments():
+    f = open('movies_complete', 'a+')
+    dm = {}
+    for line in f:
+        dm[line.replace('\n', '')] = 1
+    mf = open('movies', 'r')
+    uf = open('users', 'a')
+    cf = open('comments', 'a')
+    for ln in mf:
+        movie_number = ln.split('\t')[0]
+        if dm.get(movie_number):
+            continue
+        count = getCommentCount(movie_url % movie_number)
+        print 'there is %s comments in movie %s.' % (count, movie_number)
+        if not count:
+            f.write('%s\n' % movie_number)
+            f.flush()
+            continue
+        l = getComments(comment_url % (movie_number, count))
+        for tp in l:
+            user_number = tp[0]
+            user_name = tp[1]
+            rank = tp[3]
+            if rank:
+                uf.write('%s\t%s\n' % (user_number, user_name))
+                cf.write('%s\t%s\t%s\n' % (user_number, movie_number, rank))
+        uf.flush()
+        cf.flush()
+        f.write('%s\n' % movie_number)
+        f.flush()
+    uf.close()
+    cf.close()
+    mf.close()
+    f.close()
+
 if __name__=='__main__':
-    #print getMovieCount(listurl % (0))
-    saveMovies()
+    #saveMovies()
+    saveUsersAndComments()
