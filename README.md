@@ -17,10 +17,9 @@ We get the following infomation of movies from the internet using `Python`.
 * user name
 
 ### comments
-* movie number
 * user number
+* movie number
 * comment rank
-* comment *it is rich text*
 
 ### data sources
 * gewara[http://www.gewara.com/]
