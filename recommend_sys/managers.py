@@ -6,6 +6,9 @@ from scipy import linalg
 import time
 
 from itertools import islice
+
+from matrix_completion import SVDThreshold
+
 class Obj:
     def __init__(self, index, name):
         self.id = index
@@ -66,10 +69,12 @@ class ObjManager:
             return None
 
 class RateMatrix:
-    def __init__(self, name,matrix, tag_matrix):
+    def __init__(self, name):
         self.name = name
-        self.complete_matrix = matrix
-        self.truth_tags = tag_matrix
+        self.complete_matrix = None
+        self.truth_tags = None
+        self.users_id = []
+        self.movies_id = []
         self.filled_rate = 100.0 #in percentage
 
     def __str__(self):
@@ -183,11 +188,13 @@ class RateManager:
         active = self.active_users(user_cut)
         popular = self.popular_movies(movie_cut)
         matrix = np.zeros((popular.total, active.total))
-        truth_index = np.zeros((popular.total, active.total))
+        truth_index = np.empty((popular.total, active.total),dtype=bool)
         j = 0
         filled = 0
+        users_id = []
         for key in active.items.keys():
             user = active.items[key]
+            users_id.append(key)
             i = 0
             for key2 in popular.items.keys():
                 movie = popular.items[key2]
@@ -202,24 +209,85 @@ class RateManager:
                 truth_index[i][j] = truth_tag
                 i += 1
             j += 1
-        rateMatrix = RateMatrix(name,matrix, truth_index)
+        rateMatrix = RateMatrix(name)
+        rateMatrix.complete_matrix = matrix
+        rateMatrix.truth_tags = truth_index
+        rateMatrix.users_id = users_id
         rateMatrix.filled_rate = 100.0*filled/active.total/popular.total
-        print rateMatrix
-        return rateMatrix
-                
+        for key2 in popular.items.keys():
+            rateMatrix.movies_id.append(key2)    
+        self.rate_matrix = rateMatrix
 
+    def print_user_rated_movies(self, user_id, cut = 0.):
+        user = self.users_manager.items[user_id]
+        print "-----------------------------------"
+        print "User: ",user.name, "personal rate:"
+        for key in user.movie_rate.keys():
+            name = self.movies_manager.have_id(key).name
+            rate = user.movie_rate[key]
+            if rate >= cut:
+                print name,str(user.movie_rate[key])
+
+    def print_suggested_movies(self, user_id):
+        index = -1
+        for i in range(len(self.rate_matrix.users_id)):
+            if self.rate_matrix.users_id[i] == user_id:
+                index = i
+                break
+        if index < 0:
+            print user_id," does not exist"
+            return None
+        anti_projector = np.invert(self.rate_matrix.truth_tags)
+        recommend_matrix = self.rate_matrix.complete_matrix*anti_projector
+        rate_list = recommend_matrix[:,index]
+        sort_index = np.argsort(rate_list)
+        n_keep = 10
+        counter = 0
+        print "-----------------------------------"
+        print "Suggested movies for user: ",user_id
+        print "Name \t Estimate-rate \t Average-rate"
+        for i in reversed(sort_index):
+            imovie_id = self.rate_matrix.movies_id[i]
+            try:
+                rec_movie = self.movies_manager.have_id(imovie_id)
+                name = rec_movie.name
+                print "%s \t %.2f \t %.2f "%(rec_movie.name,rate_list[i], rec_movie.avg_rate)
+            except:
+                print imovie_id,"does not exist!"
+                pass
+            counter += 1
+            if counter >= n_keep:
+                break
+        print "-----------------------------------"
+            
 
 if __name__ == '__main__':
     ratem = RateManager()
+    #initial the database
     ratem.add_users('final_users')
     ratem.add_movies('movies')
-    print 'do you have movie: 神圣车行'
-    print ratem.movies_manager.have_name("神圣车行")
-
     ratem.add_rates('final_comments')
-    ratem.active_users(20)
-    ratem.popular_movies(50)
+
+    #initial learning machine
+    svdthreshold = SVDThreshold()
+
+    #generate the rate matrix for machine learning
     ratem.gen_rate_matrix('gewara', 20, 50)
+
+    rated_matrix = ratem.rate_matrix
+    user_id = rated_matrix.users_id[0]
+
+    #print user's personal estimation
+    ratem.print_user_rated_movies(user_id)
+
+    #learning...
+    new_matrix = svdthreshold.train(rated_matrix)
+
+    rated_matrix.complete_matrix = new_matrix
+    #print the suggestions
+    ratem.print_suggested_movies(user_id)
+    
+    
     
     
 
