@@ -13,10 +13,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Movie',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('index', models.CharField(max_length=200)),
                 ('name', models.CharField(max_length=200)),
-                ('avg_rate', models.IntegerField(default=0)),
+                ('avg_rate', models.FloatField(default=0)),
+                ('avg_rate2', models.FloatField(default=0)),
                 ('date', models.DateTimeField(verbose_name='date released')),
             ],
             options={
@@ -26,10 +27,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='User',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('index', models.CharField(max_length=200)),
                 ('name', models.CharField(max_length=200)),
-                ('movie', models.ForeignKey(to='recosys.Movie')),
+                ('n_movies', models.IntegerField(default=0)),
+                ('watched', models.ManyToManyField(to='recosys.Movie')),
             ],
             options={
             },
