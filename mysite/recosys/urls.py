@@ -2,7 +2,6 @@ from django.conf.urls import patterns, url
 
 from recosys import views
 
-urlpatterns = patterns('',\
-                       url(r'^$',views.index, name='index'),\
+urlpatterns = patterns('',
                        url(r'^(?P<movie_id>\d+)/$', views.detail, name='detail'),
                       )

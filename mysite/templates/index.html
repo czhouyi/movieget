@@ -1,0 +1,31 @@
+{% extends "bbase.html" %}
+
+{% block title %} 首页 {% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="grid no-margin">
+		<div class="row">
+			<div class="span4 no-tablet-portrait no-phone">
+            	<div class="notice marker-on-right bg-lighterBlue padding20 text-center" style="height: 200px">
+                	<h1 class="fg-white" style="font-size: 120px; line-height: 80px; margin-bottom: 30px">5</h1>
+                    <p class="subheader-secondary fg-white">latest movies</p>
+                </div>
+            </div>
+            <div class="span8">
+            	{% if latest_movie_list %}
+            	<ol class="styled">
+            		{% for movie in latest_movie_list %}
+                    <li style="width: 90%">
+                    	<a href="{% url 'detail' movie.id %}" title="{{ movie.name }}" target="_blank">{{ movie.name }}</a>
+                    </li>
+                	{% endfor %}
+            	</ol>
+				{% else %}
+    			<p> No movies are available.</p>
+				{% endif %}
+             </div>
+		</div>
+	</div>
+</div>
+{% endblock %}

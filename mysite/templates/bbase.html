@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head> 
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/metro/css/metro-bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="/static/metro/css/metro-bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="/static/metro/css/iconFont.css" />
+    <link rel="stylesheet" type="text/css" href="/static/metro/css/docs.css" />
+    <link rel="stylesheet" type="text/css" href="/static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="/static/d3/css/coltree.css" />
+    <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/jquery/jquery.widget.min.js"></script>
+    <script type="text/javascript" src="/static/metro/min/metro.min.js"></script>
+    <script type="text/javascript" src="/static/custom.js"></script>
+    <script type="text/javascript" src="/static/d3/js/d3.v3.min.js"></script>
+</head>
+
+<body class="metro">
+    <header class="bg-dark">
+    <div class="navigation-bar dark fixed-top shadow">
+        <div class="navigation-bar-content container" >
+            <a class="element" href="/">电影推荐<sup>0.1</sup></a>
+            <span class="element-divider"></span>
+            <ul class="element-menu">
+                <li><a class="element" href="/">主页</a></li>
+            </ul>
+            <span class="element-divider"></span>
+        </div>
+    </div>
+    </header>
+    {% block content %} {% endblock %}
+</div>
+</body>
+</html>
