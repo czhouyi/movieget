@@ -1,0 +1,16 @@
+{% extends "bbase.html" %}
+
+{% block title %} 电影详情 {% endblock %}
+
+{% block content %}
+<div class="container">
+	<h1>
+    	<a href="/">
+    		<i class="icon-arrow-left-3 fg-darker smaller"></i>
+		</a>
+	{{movie.name}}</h1>
+	<div class="grid no-margin">
+		<div class="rating large" data-static="false" data-score="{{movie.avg_rate}}" data-stars="5" data-role="rating" data-show-score="true" data-score-hint="Rating: "></div>
+	</div>
+</div>
+{% endblock %}
